@@ -5,14 +5,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rest.example.model.request.UpdateUserDetails;
 import rest.example.model.request.UserDetails;
 import rest.example.model.response.User;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController //-> registers the class as REST Controller
 @RequestMapping("users")
 public class UserController {
+
+
+    Map<String, User> userMap;
 
 
     @GetMapping //passing @RequestParam annotation
@@ -30,12 +37,23 @@ public class UserController {
     //HTTP 406 - Not acceptable
     public ResponseEntity<User> getUser(@PathVariable String userId) {
 
-        User user = User.builder().
+       /* User user = User.builder().
                 email("test@mytest.com").
                 lastName("Bhadani").
                 firstName("Nishant").
                 build();
-        return new ResponseEntity<User>(user,HttpStatus.OK);
+        return new ResponseEntity<User>(user,HttpStatus.OK);*/
+
+       String firstName = null;
+       firstName.length();
+
+       if(userMap.containsKey(userId)) {
+           return new ResponseEntity<>(userMap.get(userId), HttpStatus.OK);
+       }
+       else {
+           return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+       }
+
     }
 
 
@@ -47,17 +65,31 @@ public class UserController {
         user.setEmail(userDetails.getEmail());
         user.setFirstName(userDetails.getFirstName());
         user.setLastName(userDetails.getLastName());
-        return new ResponseEntity<User>(user,HttpStatus.OK);
+        String userId = UUID.randomUUID().toString();
+        user.setUserId(userId);
+        if(userMap==null) {
+            userMap = new HashMap<>();
+            userMap.put(userId,user);
+        }
+        return new ResponseEntity<>(user,HttpStatus.OK);
     }
 
-    @PutMapping
-    public String updateUser() {
-        return "update user was called";
+    @PutMapping(path = "/{userId}",consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public User updateUser(@PathVariable String userId, @Valid @RequestBody UpdateUserDetails updateUserDetails) {
+
+        User storedUser = userMap.get(userId);
+        storedUser.setFirstName(updateUserDetails.getFirstName());
+        storedUser.setLastName(updateUserDetails.getLastName());
+        userMap.put(userId,storedUser);
+        return storedUser;
     }
 
-    @DeleteMapping
-    public String deleteUser () {
-        return "delete user was called";
+    @DeleteMapping(path="/{id}")
+    public ResponseEntity<Void> deleteUser (@PathVariable String id) {
+
+        userMap.remove(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
