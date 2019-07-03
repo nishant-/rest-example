@@ -1,25 +1,29 @@
 package rest.example.controller;
 
 
+import javafx.beans.value.ObservableBooleanValue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rest.example.exceptions.UserServiceException;
 import rest.example.model.request.UpdateUserDetails;
 import rest.example.model.request.UserDetails;
 import rest.example.model.response.User;
+import rest.example.service.UserService;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController //-> registers the class as REST Controller
 @RequestMapping("users")
 public class UserController {
 
 
-    Map<String, User> userMap;
+    @Autowired
+    UserService userService;
+    private Map<String,User> userMap;
 
 
     @GetMapping //passing @RequestParam annotation
@@ -44,8 +48,13 @@ public class UserController {
                 build();
         return new ResponseEntity<User>(user,HttpStatus.OK);*/
 
-       String firstName = null;
-       firstName.length();
+      /* String firstName = null;
+       firstName.length();*/
+      //this exception will be handled by custom exception handler
+
+        if(true) {
+            throw new UserServiceException("user service exception"); //throw a user defined exception
+        }
 
        if(userMap.containsKey(userId)) {
            return new ResponseEntity<>(userMap.get(userId), HttpStatus.OK);
@@ -61,16 +70,8 @@ public class UserController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<User> createUser(@Valid @RequestBody UserDetails userDetails) {
         //adding @Valid kicks in validation for the fields defined in UserDetails
-        User user = new User();
-        user.setEmail(userDetails.getEmail());
-        user.setFirstName(userDetails.getFirstName());
-        user.setLastName(userDetails.getLastName());
-        String userId = UUID.randomUUID().toString();
-        user.setUserId(userId);
-        if(userMap==null) {
-            userMap = new HashMap<>();
-            userMap.put(userId,user);
-        }
+
+        User user = userService.createUser(userDetails);
         return new ResponseEntity<>(user,HttpStatus.OK);
     }
 

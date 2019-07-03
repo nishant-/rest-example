@@ -28,4 +28,45 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+
+    @ExceptionHandler(value = {NullPointerException.class})
+    public ResponseEntity<Object> handleNullPointerException(NullPointerException ex, WebRequest webRequest) {
+
+        String errDesc = ex.getLocalizedMessage() == null? ex.toString() : ex.getLocalizedMessage();
+
+        ErrorMessage errorMessage = ErrorMessage.builder().
+                timeStamp(new Date()).
+                message(errDesc).
+                build();
+
+        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = {UserServiceException.class})
+    public ResponseEntity<Object> handleUserServiceException(UserServiceException ex, WebRequest webRequest) {
+
+        String errDesc = ex.getLocalizedMessage() == null? ex.toString() : ex.getLocalizedMessage();
+
+        ErrorMessage errorMessage = ErrorMessage.builder().
+                timeStamp(new Date()).
+                message(errDesc).
+                build();
+
+        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //to handle multiple exceptions, effectively one method to handle multiple exceptions
+   /* @ExceptionHandler(value = {UserServiceException.class, NullPointerException.class})
+    public ResponseEntity<Object> handleMultipleExceptions(Exception ex, WebRequest webRequest) {
+
+        String errDesc = ex.getLocalizedMessage() == null? ex.toString() : ex.getLocalizedMessage();
+
+        ErrorMessage errorMessage = ErrorMessage.builder().
+                timeStamp(new Date()).
+                message(errDesc).
+                build();
+
+        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }*/
+
 }
